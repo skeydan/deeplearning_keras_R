@@ -1,0 +1,325 @@
+<style>
+
+.reveal section img {
+  border: 0px;
+  box-shadow: 0 0 0 0;
+}
+.reveal table td {
+  border: 0px;
+}
+
+.reveal table {
+  border: 0px;
+}
+
+.reveal h1 {
+  font-size: 2em;
+}
+
+.reveal h3 {
+  font-size: 1.2em;
+}
+
+.reveal figcaption {
+  font-size: 0.4em;
+}
+
+.small-code pre code {
+  font-size: 0.9em;
+}
+
+.reveal .smalltext {
+  font-size: 0.75em;
+}
+
+</style>
+
+
+Deep learning with Keras - using R
+========================================================
+author: Sigrid Keydana, Trivadis
+date: 2017/09/11
+autosize: true
+incremental:false
+width: 1400
+height: 900
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+&nbsp;
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=16, fig.height=8, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE,
+                      cache = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(forecast)
+library(tidyr)
+library(keras)
+bold_text_20 <- element_text(face = "bold", size = 20)
+bold_text_16 <- element_text(face = "bold", size = 16)
+```
+
+<figure>
+    <img src='networkZooPoster_part.png' width='70%'/>
+    <figcaption>Source: [1]</figcaption>
+</figure>
+
+
+
+
+How can we do deep learning in practice?
+========================================================
+incremental:true
+&nbsp;
+
+Powerful frameworks:
+
+- TensorFlow (Python)
+- PyTorch (Python)
+- Keras (Python)
+- DL4J (Java)
+- ...
+
+But we want to use R!
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Let's just use Keras
+========================================================
+incremental:true
+&nbsp;
+
+... from R!
+
+How? 
+
+With the <a href="https://keras.rstudio.com/"> R Interface to Keras, developed by RStudio</a>
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Getting started with Keras
+========================================================
+
+&nbsp;
+
+Four steps:
+
+0. get data
+1. define model
+2. train model
+3. test model
+
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Let's see how this works on our most beloved algorithm...
+========================================================
+incremental:true
+
+&nbsp;
+
+... linear regression!
+
+... using our most beloved dataset ...
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+========================================================
+
+tbd pic iris
+
+
+
+Step 1: get the data
+========================================================
+
+&nbsp;
+
+We want to predict Petal.Width from Petal.Length ...
+
+```{r}
+lm(Petal.Width ~ Petal.Length, data = iris) %>% summary()
+```
+
+
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+Welcome to the world of deep neural networks
+========================================================
+
+&nbsp;
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
