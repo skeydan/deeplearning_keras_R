@@ -5,11 +5,11 @@
   box-shadow: 0 0 0 0;
 }
 .reveal table td {
-  border: 0px;
+  padding: 2px;
 }
 
 .reveal table {
-  border: 0px;
+  
 }
 
 .reveal h1 {
@@ -24,12 +24,16 @@
   font-size: 0.4em;
 }
 
-.small-code pre code {
+.smallcode pre code {
   font-size: 0.9em;
 }
 
 .reveal .smalltext {
   font-size: 0.75em;
+}
+
+.reveal .mediumtext {
+  font-size: 0.85em;
 }
 
 </style>
@@ -41,8 +45,36 @@ author: Sigrid Keydana, Trivadis
 date: 2017/09/11
 autosize: true
 incremental:false
-width: 1400
+width: 1600
 height: 900
+
+
+About me & my employer
+========================================================
+class:mediumtext
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+Trivadis
+- DACH-based IT consulting and service company, from traditional technologies to big data/machine learning/data science
+
+My background
+- from psychology/statistics over software development and database engineering to data science and ML/DL
+
+My passion
+- machine learning and deep learning
+- data science and (Bayesian) statistics
+- explanation/understanding over prediction accuracy
+
+Where to find me
+- blog: http://recurrentnull.wordpress.com
+- twitter: @zkajdan
+
+
 
 
 Welcome to the world of deep neural networks
@@ -68,13 +100,15 @@ library(dplyr)
 library(forecast)
 library(tidyr)
 library(keras)
+library(gridExtra)
+library(EBImage)
 bold_text_20 <- element_text(face = "bold", size = 20)
 bold_text_16 <- element_text(face = "bold", size = 16)
 ```
 
 <figure>
-    <img src='networkZooPoster_part.png' width='70%'/>
-    <figcaption>Source: [1]</figcaption>
+    <img src='deep_nn.png' width='60%'/>
+    <figcaption>Source: https://www.doc.ic.ac.uk/~nd/surprise_96/journal/vol4/cs11/report.html</figcaption>
 </figure>
 
 
@@ -83,6 +117,10 @@ bold_text_16 <- element_text(face = "bold", size = 16)
 How can we do deep learning in practice?
 ========================================================
 incremental:true
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
 &nbsp;
 
 Powerful frameworks:
@@ -97,15 +135,14 @@ But we want to use R!
 
 &nbsp;
 
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
 Let's just use Keras
 ========================================================
 incremental:true
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
 &nbsp;
 
 ... from R!
@@ -114,28 +151,24 @@ How?
 
 With the <a href="https://keras.rstudio.com/"> R Interface to Keras, developed by RStudio</a>
 
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
 
 
 Getting started with Keras
 ========================================================
 
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
 &nbsp;
 
 Four steps:
 
-0. get data
+0. prepare data
 1. define model
 2. train model
 3. test model
 
-
-
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
 
 
 
@@ -144,6 +177,10 @@ Let's see how this works on our most beloved algorithm...
 ========================================================
 incremental:true
 
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
 &nbsp;
 
 ... linear regression!
@@ -151,175 +188,276 @@ incremental:true
 ... using our most beloved dataset ...
 
 
+========================================================
+incremental:true
+
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
 
 
+<figure>
+    <img src='iris.jpg' width='60%'/>
+</figure>
+
+
+The task
 ========================================================
+class:smallcode
 
-tbd pic iris
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
 
-
-
-Step 1: get the data
-========================================================
 
 &nbsp;
 
 We want to predict Petal.Width from Petal.Length ...
 
-```{r}
+```{r, fig.width=8, fig.height = 4}
 lm(Petal.Width ~ Petal.Length, data = iris) %>% summary()
+ggplot(iris, aes(x = Petal.Length, y = Petal.Width, color = Species)) + geom_point() + geom_smooth()
 ```
 
 
-
+Step 1: Prepare data
+========================================================
+class:mediumtext
 
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
+Not much to do in this case, just split into x/y and test & training sets:
+
+```{r, echo=TRUE}
+x_train <- iris[1:120, "Petal.Length"]
+y_train <- iris[1:120, "Petal.Width"]
+x_test <- iris[121:150, "Petal.Length"]
+y_test <- iris[121:150, "Petal.Width"]
+```
+
+
+Step 2: Define model
+========================================================
+class:mediumtext
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+```{r, echo=TRUE}
+model <- keras_model_sequential()
+model %>%
+  layer_dense(units = 8, input_shape = 1) %>% # hidden layer with 8 neurons, 1-dimensional input
+  layer_activation_leaky_relu() %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 1) # output layer with linear activation
 
+# model %>% summary() # params: num_hidden weights and biases each to hidden layer, 4 weights and 1 bias to output neuron
 
-
-
-Welcome to the world of deep neural networks
-========================================================
-
-&nbsp;
-
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
+model %>% compile(optimizer = "adam", loss = "mean_squared_error")
+```
 
 &nbsp;
 
+<table style="margin-left: 200px;">
+<tr><td>Layer (type)</td><td>Output Shape</td><td>Param</td></tr>
+<tr><td>dense_1 (Dense)</td><td>(None, 8)</td><td>16</td></tr>
+<tr><td>leaky_re_lu_1 (LeakyReLU)</td><td>(None, 8)</td><td>0</td></tr>
+<tr><td>dropout_1 (Dropout)</td><td>(None, 8)</td><td>0</td></tr>
+<tr><td>dense_2 (Dense)</td><td>(None, 1)</td><td>9</td></tr>
+</table>
+
+
+Step 3: Train model
+========================================================
+class:mediumtext
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
+```{r}
+model <- keras_model_sequential()
+model %>%
+  layer_dense(units = 8, input_shape = 1) %>% # hidden layer with 8 neurons, 1-dimensional input
+  layer_activation_leaky_relu() %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 1) # output layer with linear activation
+
+# model %>% summary() # params: num_hidden weights and biases each to hidden layer, num_hidden weights and 1 bias to output neuron
+
+model %>% compile(optimizer = "adam", loss = "mean_squared_error")
+```
+
+
+```{r, echo=TRUE, results="hide", fig.width=8, fig.height=4}
+hist <-
+  model %>% fit(
+    x_train,
+    y_train,
+    batch_size = 10,
+    epochs = 100
+  )
+model %>% save_model_hdf5("iris.h5")
+
+plot(hist)
+```
+
+
+Step 4: Test model
+========================================================
+class:mediumtext
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
+```{r, echo=TRUE}
+model <- load_model_hdf5("iris.h5")
+model %>% evaluate(x_test, y_test)
+
+preds_train <- model %>% predict(x_train)
+preds_test <- model %>% predict(x_test)
+```
+
+
+```{r}
+preds_df <-
+  data.frame(predictor = x_train,
+             actual = y_train,
+             predicted = preds_train)
+preds_df <- preds_df %>% gather(type, value,-predictor)
+g1 <- ggplot(preds_df, aes(x = predictor, y = value)) + geom_point(aes(color = type)) +
+   ggtitle("Predictions on training set") + 
+  theme(title = bold_text_20, axis.title = bold_text_20, axis.text = bold_text_20)
+
+
+preds_df <-
+  data.frame(predictor = x_test,
+             actual = y_test,
+             predicted = preds_test)
+preds_df <- preds_df %>% gather(type, value,-predictor)
+g2 <- ggplot(preds_df, aes(x = predictor, y = value)) + geom_point(aes(color = type)) + 
+   ggtitle("Predictions on test set") + 
+  theme(title = bold_text_20, axis.title = bold_text_20, axis.text = bold_text_20)
+grid.arrange(g1, g2, ncol=2)
+```
+
+
+Going deeper: convnets
+========================================================
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
+LeNet: First successful application of convolutional neural networks by Yann LeCun, Yoshua Bengio et al.
+
+<figure>
+    <img src='lenet.png' width='80%'/>
+    <figcaption>Source: http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf</figcaption>
+</figure>
+
+
+
+The convolution operation
+========================================================
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
+<figure>
+    <img src='2dconv.png' width='40%'/>
+    <figcaption>Source: Goodfellow et al., Deep Learning.</figcaption>
+</figure>
+
+
+CIFAR-10
+========================================================
+class:mediumtext
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
+32*32 px RGB images, split into training set (50000) and test set (10000)
+
+```{r, echo=TRUE}
+cifar10 <- dataset_cifar10()
+
+x_train <- cifar10$train$x/255
+x_test <- cifar10$test$x/255
+y_train <- to_categorical(cifar10$train$y, num_classes = 10)
+y_test <- to_categorical(cifar10$test$y, num_classes = 10)
+```
+
+```{r}
+layout(matrix(1:20, 4, 5))
+
+for (i in 1:20) {
+  img <- transpose(Image(data = x_train[i, , , ], colormode = "Color"))
+  display(img, method="raster", all = TRUE)
+}
+```
+
+A simple convnet
+========================================================
+
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
 
 &nbsp;
 
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+```{r, echo=TRUE}
+model <- keras_model_sequential()
 
-
-
-
-Welcome to the world of deep neural networks
-========================================================
-
-&nbsp;
-
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
-
-&nbsp;
-
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
-
-
-
-Welcome to the world of deep neural networks
-========================================================
-
-&nbsp;
-
-<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
-<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
-
+model %>%
+  
+  # Start with hidden 2D convolutional layer being fed 32x32 pixel images
+  layer_conv_2d(
+    filter = 32, kernel_size = c(3,3), padding = "same", 
+    input_shape = c(32, 32, 3)
+  ) %>%
+  layer_activation("relu") %>%
+  
+  # Second hidden layer
+  layer_conv_2d(filter = 32, kernel_size = c(3,3)) %>%
+  layer_activation("relu") %>%
+  
+  # Use max pooling
+  layer_max_pooling_2d(pool_size = c(2,2)) %>%
+  layer_dropout(0.25) %>%
+  
+  # 2 additional hidden 2D convolutional layers
+  layer_conv_2d(filter = 32, kernel_size = c(3,3), padding = "same") %>%
+  layer_activation("relu") %>%
+  layer_conv_2d(filter = 32, kernel_size = c(3,3)) %>%
+  layer_activation("relu") %>%
+  
+  # Use max pooling once more
+  layer_max_pooling_2d(pool_size = c(2,2)) %>%
+  layer_dropout(0.25) %>%
+  
+  # Flatten max filtered output into feature vector 
+  # and feed into dense layer
+  layer_flatten() %>%
+  layer_dense(512) %>%
+  layer_activation("relu") %>%
+  layer_dropout(0.5) %>%
+  
+  # Outputs from dense layer are projected onto 10 unit output layer
+  layer_dense(10) %>%
+  layer_activation("softmax")
+)
+```
 
 
