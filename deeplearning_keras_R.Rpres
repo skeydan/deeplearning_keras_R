@@ -63,7 +63,7 @@ Trivadis
 - DACH-based IT consulting and service company, from traditional technologies to big data/machine learning/data science
 
 My background
-- from psychology/statistics over software development and database engineering to data science and ML/DL
+- from psychology/statistics via software development and database engineering to data science and ML/DL
 
 My passion
 - machine learning and deep learning
@@ -102,6 +102,11 @@ library(tidyr)
 library(keras)
 library(gridExtra)
 library(EBImage)
+library(readr)
+library(stringr)
+library(purrr)
+library(tokenizers)
+
 bold_text_20 <- element_text(face = "bold", size = 20)
 bold_text_16 <- element_text(face = "bold", size = 16)
 ```
@@ -199,6 +204,19 @@ incremental:true
 <figure>
     <img src='iris.jpg' width='60%'/>
 </figure>
+
+
+
+========================================================
+type:prompt
+
+&nbsp; 
+
+&nbsp; 
+
+<h1>
+Linear regression with Keras
+</h1>
 
 
 The task
@@ -349,7 +367,20 @@ grid.arrange(g1, g2, ncol=2)
 ```
 
 
-Going deeper: convnets
+
+========================================================
+type:prompt
+
+&nbsp; 
+
+&nbsp; 
+
+<h1>
+Convolutional Neural Networks (CNNs)
+</h1>
+
+
+Going spatial: convnets
 ========================================================
 
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
@@ -409,8 +440,9 @@ for (i in 1:20) {
 }
 ```
 
-A simple convnet
+A (rather) simple convnet
 ========================================================
+class:mediumtext
 
 <img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
@@ -421,43 +453,356 @@ A simple convnet
 model <- keras_model_sequential()
 
 model %>%
-  
-  # Start with hidden 2D convolutional layer being fed 32x32 pixel images
-  layer_conv_2d(
-    filter = 32, kernel_size = c(3,3), padding = "same", 
-    input_shape = c(32, 32, 3)
-  ) %>%
+  layer_conv_2d(filters = 32, kernel_size = c(3,3), padding = "same", input_shape = c(32, 32, 3)) %>%
   layer_activation("relu") %>%
   
-  # Second hidden layer
+  layer_conv_2d(filters = 32, kernel_size = c(3,3)) %>% layer_activation("relu") %>%
+  layer_max_pooling_2d(pool_size = c(2,2)) %>% 
+  layer_dropout(0.25) %>%
+  
+  layer_conv_2d(filters = 32, kernel_size = c(3,3), padding = "same") %>%
+  layer_activation("relu") %>%
+  
   layer_conv_2d(filter = 32, kernel_size = c(3,3)) %>%
   layer_activation("relu") %>%
-  
-  # Use max pooling
   layer_max_pooling_2d(pool_size = c(2,2)) %>%
   layer_dropout(0.25) %>%
   
-  # 2 additional hidden 2D convolutional layers
-  layer_conv_2d(filter = 32, kernel_size = c(3,3), padding = "same") %>%
-  layer_activation("relu") %>%
-  layer_conv_2d(filter = 32, kernel_size = c(3,3)) %>%
-  layer_activation("relu") %>%
-  
-  # Use max pooling once more
-  layer_max_pooling_2d(pool_size = c(2,2)) %>%
-  layer_dropout(0.25) %>%
-  
-  # Flatten max filtered output into feature vector 
-  # and feed into dense layer
   layer_flatten() %>%
   layer_dense(512) %>%
   layer_activation("relu") %>%
   layer_dropout(0.5) %>%
-  
-  # Outputs from dense layer are projected onto 10 unit output layer
+
   layer_dense(10) %>%
   layer_activation("softmax")
+```
+
+
+Compile and train (not now)
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, echo=TRUE, eval=FALSE}
+model %>% compile(
+  loss = "categorical_crossentropy",
+  optimizer = optimizer_rmsprop(lr = 0.0001, decay = 1e-6),
+  metrics = "accuracy"
+)
+  
+model %>% fit(
+  x_train,
+  y_train,
+  batch_size = 32,
+  epochs = 200,
+  validation_data = list(x_test, y_test),
+  shuffle = TRUE
 )
 ```
 
+
+Evaluate model
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, echo=TRUE}
+model <- load_model_hdf5("cifar_10_200epochs.h5")
+(model %>% evaluate(x_test, y_test))[[2]] # accuracy
+
+y_test[1] # example image: true class
+model %>% predict_proba(x_test[1, , , , drop = FALSE])
+model %>% predict_classes(x_test[1, , , , drop = FALSE])
+```
+
+
+Why start from scratch? Pretrained models
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+
+Available in Keras, with weights trained on ImageNet
+
+- Inception V3
+- VGG19, VGG19
+- ResNet
+- Xception
+
+Usage:
+
+- as is
+- remove top fully connected layer and train for own classes
+- remove top fully connected layer and train for own classes, fine-tune upper layers 
+- extract features (top or intermediate)
+
+
+What's this?
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+<figure>
+    <img src='xc.jpg' width='30%'/>
+    <figcaption>Source: Imagenet</figcaption>
+</figure>
+
+
+Ask VGG16
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, echo=TRUE}
+model <- application_vgg16(weights = 'imagenet')
+
+img_path <- "xc.jpg"
+img <- image_load(img_path, target_size = c(224,224)) 
+x <- image_to_array(img)
+dim(x) <- c(1, dim(x))
+
+x <- imagenet_preprocess_input(x)
+
+preds <- model %>% predict(x)
+imagenet_decode_predictions(preds)
+```
+
+
+Ask Resnet
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, echo=TRUE}
+model <- application_resnet50(weights = 'imagenet')
+
+img_path <- "xc.jpg"
+img <- image_load(img_path, target_size = c(224,224)) 
+x <- image_to_array(img)
+dim(x) <- c(1, dim(x))
+
+x <- imagenet_preprocess_input(x)
+
+preds <- model %>% predict(x)
+imagenet_decode_predictions(preds)
+```
+
+
+Ask Inception V3
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, echo=TRUE}
+model <- application_inception_v3(weights = 'imagenet')
+
+img_path <- "xc.jpg"
+img <- image_load(img_path, target_size = c(299,299)) 
+x <- image_to_array(img)
+dim(x) <- c(1, dim(x))
+
+x <- inception_v3_preprocess_input(x)
+
+preds <- model %>% predict(x)
+which.max(preds)
+imagenet_decode_predictions(preds)
+```
+
+
+
+========================================================
+type:prompt
+
+&nbsp; 
+
+&nbsp; 
+
+<h1>
+Long Short Term Memory (LSTM)
+</h1>
+
+
+
+Going sequential: Recurrent Neural Networks (RNNs)
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+<figure>
+    <img src='rnn1.png' width='80%'/>
+    <figcaption>Source: Goodfellow et al. 2016, Deep Learning</figcaption>
+</figure>
+
+
+I need to forget: Long Short Term Memory
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+<figure>
+    <img src='lstm.png' align='left' width='60%'/> <img src='lstm2.png' align='right' width='40%'/>
+    <figcaption>Source: <a href='http://cs224d.stanford.edu/lecture_notes/LectureNotes4.pdf'>Stanford CS 224D Deep Learning for NLP Lecture Notes</a></figcaption>
+</figure>
+
+
+
+Let's write ourselves some R (source!)
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+... character by character (fun read: <a href="http://karpathy.github.io/2015/05/21/rnn-effectiveness/">The Unreasonable Effectiveness of Recurrent Neural Networks</a>)
+
+
+Input: subset of .c files under $R_HOME/src/main
+
+Like this, for example...
+
+```
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <Defn.h>
+#include <Internal.h>
+
+/* JMC convinced MM that this was not a good idea: */
+#undef _S4_subsettable
+
+static R_INLINE SEXP VECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
+    /* if RHS (container or element) has NAMED > 0 set NAMED = 2.
+       Duplicating might be safer/more consistent (fix bug reported by
+       Radford Neal; similar to PR15098) */
+    SEXP val = VECTOR_ELT(y, i);
+    if ((NAMED(y) || NAMED(val)))
+        if (NAMED(val) < 2)
+            SET_NAMED(val, 2);
+    return val;
+}
+
+```
+
+Preprocessing for char-rnn
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+
+Preprocessing steps:
+
+- split into characters
+- build a dictionary of characters
+- build a list of (overlapping) character sequences of a specific length
+
+```{r, eval = FALSE}
+dataset <- map(
+  seq(1, length(text) - maxlen - 1, by = 3), 
+  function(x) list(sentence = text[x:(x + maxlen - 1)], next_char = text[x + maxlen])
+)
+```
+
+Create X and y matrices in formats required by LSTM
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, eval=FALSE}
+dataset <- transpose(dataset)
+
+X <- array(0, dim = c(length(dataset$sentence), maxlen, length(chars)))
+y <- array(0, dim = c(length(dataset$sentence), length(chars)))
+dim(X)
+dim(y)
+
+for(i in 1:length(dataset$sentence)){  
+  X[i,,] <- sapply(chars, function(x){
+    as.integer(x == dataset$sentence[[i]])
+  })  
+  y[i,] <- as.integer(chars == dataset$next_char[[i]])
+}
+
+```
+
+Define the model
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r, eval = FALSE}
+model <- keras_model_sequential()
+
+model %>%
+  layer_lstm(128, input_shape = c(maxlen, length(chars))) %>%
+  layer_dense(length(chars)) %>%
+  layer_activation("softmax")
+
+optimizer <- optimizer_rmsprop(lr = 0.01)
+
+model %>% compile(
+  loss = "categorical_crossentropy", 
+  optimizer = optimizer
+)
+```
+
+
+60 epochs later... let's see some output!
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
 

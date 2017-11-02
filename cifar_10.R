@@ -32,9 +32,6 @@ for (i in 1:20) {
         
 
 
-
-
-
 # Defining Model ----------------------------------------------------------
 
 # Initialize sequential model
