@@ -99,6 +99,7 @@ library(ggplot2)
 library(dplyr)
 library(forecast)
 library(tidyr)
+library(reticulate)
 library(keras)
 library(gridExtra)
 library(EBImage)
@@ -273,7 +274,7 @@ model %>%
   layer_dropout(rate = 0.2) %>%
   layer_dense(units = 1) # output layer with linear activation
 
-# model %>% summary() # params: num_hidden weights and biases each to hidden layer, 4 weights and 1 bias to output neuron
+# model %>% summary() # params: num_hidden weights and biases each to hidden layer, 8 weights and 1 bias to output neuron
 
 model %>% compile(optimizer = "adam", loss = "mean_squared_error")
 ```
@@ -435,9 +436,10 @@ y_test <- to_categorical(cifar10$test$y, num_classes = 10)
 layout(matrix(1:20, 4, 5))
 
 for (i in 1:20) {
-  img <- transpose(Image(data = x_train[i, , , ], colormode = "Color"))
+  img <- EBImage::transpose(Image(data = x_train[i, , , ], colormode = "Color"))
   display(img, method="raster", all = TRUE)
 }
+
 ```
 
 A (rather) simple convnet
@@ -736,14 +738,27 @@ Preprocessing steps:
 
 - split into characters
 - build a dictionary of characters
-- build a list of (overlapping) character sequences of a specific length
+- build a list of (overlapping) character sequences of a specific length, and the corresponding following char
 
-```{r, eval = FALSE}
+```{r, eval = FALSE, echo=TRUE}
 dataset <- map(
   seq(1, length(text) - maxlen - 1, by = 3), 
   function(x) list(sentence = text[x:(x + maxlen - 1)], next_char = text[x + maxlen])
 )
+dataset[[14]]
+
 ```
+
+```
+$sentence
+ [1] "s"  "t"  "i"  "c"  "a"  "l"  " "  "d"  "a"  "t"  "a"  " "  "a" 
+[14] "n"  "a"  "l"  "y"  "s"  "i"  "s"  "\n" " "  "*"  " "  " "  "c" 
+[27] "o"  "p"  "y"  "r"  "i"  "g"  "h"  "t"  " "  "("  "c"  ")"  " " 
+[40] "1" 
+
+$next_char
+[1] "9"
+``` 
 
 Create X and y matrices in formats required by LSTM
 ========================================================
@@ -754,13 +769,19 @@ class:mediumtext
 
 &nbsp;
 
-```{r, eval=FALSE}
+LSTM needs as input a 3-dimensional array, where the sizes are, in order
+
+- batch input size
+- number of timesteps (characters to use for prediction, in our case)
+- number of features (the dictionary of characters, in our case)
+
+&nbsp;
+
+```{r, eval=FALSE, echo=TRUE}
 dataset <- transpose(dataset)
 
 X <- array(0, dim = c(length(dataset$sentence), maxlen, length(chars)))
 y <- array(0, dim = c(length(dataset$sentence), length(chars)))
-dim(X)
-dim(y)
 
 for(i in 1:length(dataset$sentence)){  
   X[i,,] <- sapply(chars, function(x){
@@ -771,7 +792,9 @@ for(i in 1:length(dataset$sentence)){
 
 ```
 
-Define the model
+
+
+Define model
 ========================================================
 class:mediumtext
 
@@ -780,7 +803,7 @@ class:mediumtext
 
 &nbsp;
 
-```{r, eval = FALSE}
+```{r, eval = FALSE, echo=TRUE}
 model <- keras_model_sequential()
 
 model %>%
@@ -805,4 +828,457 @@ class:mediumtext
 <img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
 
 &nbsp;
+
+```{r}
+maxlen <- 40
+path <- "all.c"
+
+sample_mod <- function(preds, temperature = 1){
+  preds <- log(preds)/temperature
+  exp_preds <- exp(preds)
+  preds <- exp_preds/sum(exp(preds))
+  
+  rmultinom(1, 1, preds) %>% 
+    as.integer() %>%
+    which.max()
+}
+
+model <- load_model_hdf5("char_rnn_60.h5")
+
+text <- read_lines(path) %>%
+  str_to_lower() %>%
+  str_c(collapse = "\n") %>%
+  tokenize_characters(strip_non_alphanum = FALSE, simplify = TRUE)
+
+chars <- text %>%
+  unique() %>%
+  sort()
+
+
+start_index <- sample(1:(length(text) - maxlen), size = 1)
+sentence <- text[start_index:(start_index + maxlen - 1)]
+generated <- ""
+      
+for(i in 1:400){
+        
+  x <- sapply(chars, function(x){
+       as.integer(x == sentence)
+  })
+  x <- array_reshape(x, c(1, dim(x)))
+        
+  preds <- predict(model, x)
+  next_index <- sample_mod(preds, temperature = 0.2)
+  next_char <- chars[next_index]
+        
+  generated <- str_c(generated, next_char, collapse = "")
+  sentence <- c(sentence[-1], next_char)
+}
+cat(generated)
+```
+
+&nbsp;
+
+Could be C to me ;-)
+
+Another one... more adventurous this time...
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r}
+model <- load_model_hdf5("char_rnn_60.h5")
+
+start_index <- sample(1:(length(text) - maxlen), size = 1)
+sentence <- text[start_index:(start_index + maxlen - 1)]
+generated <- ""
+      
+for(i in 1:400){
+        
+  x <- sapply(chars, function(x){
+       as.integer(x == sentence)
+  })
+  x <- array_reshape(x, c(1, dim(x)))
+        
+  preds <- predict(model, x)
+  next_index <- sample_mod(preds, temperature = 1)
+  next_char <- chars[next_index]
+        
+  generated <- str_c(generated, next_char, collapse = "")
+  sentence <- c(sentence[-1], next_char)
+}
+cat(generated)
+```
+
+
+... and a still more creative one...
+========================================================
+class:mediumtext
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+&nbsp;
+
+```{r}
+model <- load_model_hdf5("char_rnn_60.h5")
+
+start_index <- sample(1:(length(text) - maxlen), size = 1)
+sentence <- text[start_index:(start_index + maxlen - 1)]
+generated <- ""
+      
+for(i in 1:400){
+        
+  x <- sapply(chars, function(x){
+       as.integer(x == sentence)
+  })
+  x <- array_reshape(x, c(1, dim(x)))
+        
+  preds <- predict(model, x)
+  next_index <- sample_mod(preds, temperature = 1.6)
+  next_char <- chars[next_index]
+        
+  generated <- str_c(generated, next_char, collapse = "")
+  sentence <- c(sentence[-1], next_char)
+}
+cat(generated)
+```
+
+&nbsp;
+
+Now we know where the "less helpful error messages" come from ;-)
+
+
+
+Another cool thing we can do with LSTMs: Time series forecasting
+========================================================
+class:smallcode
+
+&nbsp;
+
+Take this one:
+
+```{r}
+traffic_df <- read_csv("internet-traffic-data-in-bits-fr.csv", col_names = c("hour", "bits"), skip = 1)
+ggplot(traffic_df, aes(x = hour, y = bits)) + geom_line() + ggtitle("Internet traffic  in bits, 7 June to 31 July 2005. Hourly data.") + theme(title = bold_text_16, axis.title = bold_text_16, axis.text = bold_text_16)
+
+
+```
+
+This series has _multiple seasonality_.
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+
+One-step-ahead forecasts
+========================================================
+class:smallcode
+
+&nbsp;
+
+Preprocessing:
+
+- Scale/normalize the data (especially with extremely high values like this!)
+- Again, reshape data to the form <_num samples, num timesteps, num features_>
+
+Model definition:
+
+```{r, echo=TRUE, eval=FALSE}
+model %>% 
+  layer_lstm(units = lstm_units, input_shape = c(num_steps, num_features)) %>% 
+  layer_dense(units = 1) %>% 
+  compile(
+    loss = 'mean_squared_error',
+    optimizer = 'adam'
+  )
+```
+
+
+&nbsp;
+
+Where the number of timesteps is chosen to be 24 hours * 7 days = 168.
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+And after about 20 epochs of training...
+========================================================
+class:smallcode
+
+&nbsp;
+
+... here are the forecasts:
+
+```{r, results="hide"}
+source("functions.R")
+traffic_df <- read_csv("internet-traffic-data-in-bits-fr.csv", col_names = c("hour", "bits"), skip = 1)
+
+internet_train <- traffic_df$bits[1:800]
+internet_test <- traffic_df$bits[801:nrow(traffic_df)]
+
+model_exists <- TRUE
+
+lstm_num_timesteps <- 7*24
+batch_size <- 1
+epochs <- 500
+lstm_units <- 32
+model_type <- "model_lstm_simple"
+lstm_type <- "stateless"
+data_type <- "data_scaled"
+test_type <- "INTERNET"
+
+model_name <- "model_lstm_simple_stateless_data_scaled_INTERNET_500_epochs"
+
+cat("\n####################################################################################")
+cat("\nRunning model: ", model_name)
+cat("\n####################################################################################")
+
+train <- internet_train[!is.na(internet_train)]
+test <- internet_test[!is.na(internet_test)]
+
+# normalize
+minval <- min(train)
+maxval <- max(train)
+
+train <- normalize(train, minval, maxval)
+test <- normalize(test, minval, maxval)
+
+X_train <- build_X(train, lstm_num_timesteps) 
+y_train <- build_y(train, lstm_num_timesteps) 
+
+X_test <- build_X(test, lstm_num_timesteps) 
+y_test <- build_y(test, lstm_num_timesteps) 
+
+# Keras LSTMs expect the input array to be shaped as (no. samples, no. time steps, no. features)
+X_train <- reshape_X_3d(X_train)
+X_test <- reshape_X_3d(X_test)
+
+num_samples <- dim(X_train)[1]
+num_steps <- dim(X_train)[2]
+num_features <- dim(X_train)[3]
+
+# model
+if (!model_exists) {
+  set.seed(22222)
+  model <- keras_model_sequential() 
+  model %>% 
+    layer_lstm(units = lstm_units, input_shape = c(num_steps, num_features)) %>% 
+    layer_dense(units = 1) %>% 
+    compile(
+      loss = 'mean_squared_error',
+      optimizer = 'adam'
+    )
+  
+  model %>% summary()
+  
+  model %>% fit( 
+    X_train, y_train, batch_size = batch_size, epochs = epochs,
+    validation_data = list(X_test, y_test),
+    callbacks = callback_early_stopping(patience=2)
+    
+  )
+  model %>% save_model_hdf5(filepath = paste0(model_name, ".h5"))
+} else {
+  model <- load_model_hdf5(filepath = paste0(model_name, ".h5"))
+}
+
+pred_train <- model %>% predict(X_train, batch_size = 1)
+pred_test <- model %>% predict(X_test, batch_size = 1)
+
+pred_train <- denormalize(pred_train, minval, maxval)
+pred_test <- denormalize(pred_test, minval, maxval)
+
+df <- data_frame(
+                 time_id = 1:1231,
+                 train = c(internet_train, rep(NA, length(internet_test))),
+                 test = c(rep(NA, length(internet_train)), internet_test),
+                 pred_train_ = c(rep(NA, lstm_num_timesteps), pred_train, rep(NA, length(internet_test))),
+                 pred_test_ = c(rep(NA, length(internet_train)), rep(NA, lstm_num_timesteps), pred_test)
+   )
+df <- df %>% gather(key = 'type', value = 'value', train:pred_test_)
+ggplot(df, aes(x = time_id, y = value)) + geom_line(aes(color = type))
+```
+
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+How about multi-step-ahead forecasts?
+========================================================
+class:smallcode
+
+&nbsp;
+
+We can use Keras TimeDistributed layer for this.
+
+```{r, eval=FALSE, echo = TRUE}
+lstm_units <- 24 * 7 # hourly * weekly
+model %>% 
+  layer_lstm(units = lstm_units, input_shape = c(num_steps, num_features),
+               return_sequences = TRUE) %>% 
+  time_distributed(layer_dense(units = 1)) %>% 
+  compile(
+    loss = 'mean_squared_error',
+    optimizer = 'adam'
+)
+```
+
+&nbsp;
+
+Where number of predictions equals number of timesteps: 168.
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
+
+168-step-ahead forecasts!
+========================================================
+class:smallcode
+
+&nbsp;
+
+And here are the forecasts, 168 steps ahead (displaying 3 only)
+
+&nbsp;
+
+```{r, results="hide"}
+internet_train <- traffic_df$bits[1:800]
+internet_test <- traffic_df$bits[801:nrow(traffic_df)]
+
+model_exists <- TRUE
+
+lstm_num_predictions <- 168
+lstm_num_timesteps <- 168
+batch_size <- 1
+epochs <- 500
+lstm_units <- 32
+lstm_type <- "stateless"
+data_type <- "data_scaled"
+test_type <- "INTERNET"
+model_type <- "model_lstm_time_distributed"
+
+model_name <- "model_lstm_time_distributed_stateless_data_scaled_internet_timesteps_168"
+
+train <- internet_train[!is.na(internet_train)]
+test <- internet_test[!is.na(internet_test)]
+
+num_train <- length(train)
+num_test <- length(test)
+num_all <- num_train + num_test
+
+# normalize
+minval <- min(train)
+maxval <- max(train)
+
+train <- normalize(train, minval, maxval)
+test <- normalize(test, minval, maxval)
+
+matrix_train <- build_matrix(train, lstm_num_timesteps + lstm_num_predictions) 
+matrix_test <- build_matrix(test, lstm_num_timesteps + lstm_num_predictions) 
+
+X_train <- matrix_train[ ,1:lstm_num_timesteps]
+y_train <- matrix_train[ ,(lstm_num_timesteps + 1):(lstm_num_timesteps + lstm_num_predictions)]
+
+X_test <- matrix_test[ ,1:lstm_num_timesteps]
+y_test <- matrix_test[ ,(lstm_num_timesteps + 1):(lstm_num_timesteps + lstm_num_predictions)]
+
+# Keras LSTMs expect the input array to be shaped as (no. samples, no. time steps, no. features)
+X_train <- reshape_X_3d(X_train)
+X_test <- reshape_X_3d(X_test)
+
+y_train <- reshape_X_3d(y_train)
+y_test <- reshape_X_3d(y_test)
+
+num_samples <- dim(X_train)[1]
+num_steps <- dim(X_train)[2]
+num_features <- dim(X_train)[3]
+
+# model
+if (!model_exists) {
+  set.seed(22222)
+  model <- keras_model_sequential() 
+  model %>% 
+    layer_lstm(units = lstm_units, input_shape = c(num_steps, num_features),
+               return_sequences = TRUE) %>% 
+    time_distributed(layer_dense(units = 1)) %>% 
+    compile(
+      loss = 'mean_squared_error',
+      optimizer = 'adam'
+    )
+  
+  model %>% summary()
+  
+  model %>% fit( 
+    X_train, y_train, batch_size = batch_size, epochs = epochs,
+    validation_data = list(X_test, y_test), callbacks = callback_early_stopping(patience=2)
+  )
+  model %>% save_model_hdf5(filepath = paste0(model_name, ".h5"))
+} else {
+  model <- load_model_hdf5(filepath = paste0(model_name, ".h5"))
+}
+
+pred_train <- model %>% predict(X_train, batch_size = 1)
+pred_test <- model %>% predict(X_test, batch_size = 1)
+
+pred_train <- denormalize(pred_train, minval, maxval)
+pred_test <- denormalize(pred_test, minval, maxval)
+
+pred_train <- pred_train[ , , 1]
+pred_test <- pred_test[ , , 1]
+
+df <- data_frame(time_id = 1:length(test),
+                 test = denormalize(test, minval, maxval))
+for(i in seq_len(nrow(pred_test))) {
+  varname <- paste0("pred_test", i)
+  df <- mutate(df, !!varname := c(rep(NA, lstm_num_timesteps),
+                                  rep(NA, i-1),
+                                  pred_test[i, ],
+                                  rep(NA, num_test - lstm_num_predictions - lstm_num_timesteps -i +1)))
+}
+
+ggplot(df, aes(x = time_id, y =test)) + geom_line()  +
+ geom_line(aes(y = pred_test1), color = "cyan") + 
+  geom_line(aes(y = pred_test48), color = "red") + 
+  geom_line(aes(y = pred_test96), color = "green")  + 
+  ggtitle("Internet traffic  in bits. 168-step-ahead forecasts for the test set.") + theme(title = bold_text_16, axis.title = bold_text_16, axis.text = bold_text_16)
+  
+```
+
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+That's just a small glimpse of what you could do...
+========================================================
+class:smallcode
+
+&nbsp;
+
+... with Keras, in R.
+
+Go ahead and have fun :-)
+
+&nbsp;
+
+Thanks for your attention!!
+
+<img src="tri_logo_high.jpg" style="position:absolute;top:0px;right:0px; width: 10%" />
+<img src='cube3.png' border=0 style="position:absolute;top:90%;right:0px; width: 8%" />
+
+
+
 

@@ -1,1 +1,12 @@
 *.h5
+.Rhistory
+.Rprofile
+Figs/
+deeplearning_keras_R-cache/
+deeplearning_keras_R-rpubs.html
+deeplearning_keras_R.html
+deeplearning_keras_R.md
+deeplearning_keras_R.pdf
+internet-traffic-data-in-bits-fr.csv
+tri_logo_high.jpg
+cube3.png
